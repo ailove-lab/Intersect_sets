@@ -98,6 +98,6 @@ int usage() {
     cout << "Пересекает две группы множеств ID, каждое с каждым." << endl;
     cout << "Входные параметры - двa каталога, содержащие фалы с ID." << endl;
     cout << "Применение:" << endl;
-    cout << "\t./intersect_sets folder_A folder_B" << endl;
+    cout << "\t./intersect_sets folder_A folder_B >> intersection.txt" << endl;
     return 1;
 }
