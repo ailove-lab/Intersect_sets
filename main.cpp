@@ -34,7 +34,6 @@ int main(int argc, char** argv) {
         cerr << folder_A + "/" + f << endl;
         ifstream file(folder_A + "/" +f);
         if(file.is_open()) {
-            cerr << f << endl;
             string uid;
             while(getline(file, uid)) {
                 if(uid[uid.size()-1]=='\r') uid.resize(uid.size()-1);
@@ -45,7 +44,7 @@ int main(int argc, char** argv) {
 
     // Выводим размеры множеств каталога А
     for(auto&& s: folder_A_sets) {
-        cerr << "A/" << s.first << ":" << s.second.size() << endl;
+        cout << "A/" << s.first << "\t" << s.second.size() << endl;
     }
 
     // пробегаем по файлам из каталога B, считаем ко-во пересечений с множествами каталога A
@@ -53,7 +52,6 @@ int main(int argc, char** argv) {
         cerr << folder_B+"/"+f << endl;
         ifstream file(folder_B+"/"+f);
         if(file.is_open()) {
-            cerr << f << endl;
             string uid;
             int c = 0;
             while(getline(file, uid)) {
@@ -65,7 +63,7 @@ int main(int argc, char** argv) {
                 }
                 c++;
             }
-            cout << f << "\t" << c << endl;
+            cout << "B/" << f << "\t" << c << endl;
         }
     }
 
