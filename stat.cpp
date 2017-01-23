@@ -12,6 +12,7 @@
 #include <map>
 #include <vector>
 #include <bitset>
+#include <algorithm>
 
 #include <dirent.h>
 
@@ -32,8 +33,7 @@ int main(int argc, char** argv) {
 
   get_allfiles(path, files);
   int files_count = files.size();
-  cout << files_count << endl;
-
+  sort(files.begin(), files.end());
   // print names
   for(auto&& f : files) {
     cout << f << endl;
