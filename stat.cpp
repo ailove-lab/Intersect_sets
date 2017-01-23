@@ -44,6 +44,8 @@ int main(int argc, char** argv) {
   // iterate throught files
   for(auto&& f : files) {
     string filename = path + filename;
+    cout << filename << endl;
+    break;
     ifstream file(filename);
     if (file.is_open()) {
       string uid;
