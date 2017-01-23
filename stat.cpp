@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
   int bit = 0;
   // iterate throught files
   for(auto&& f : files) {
-    string filename = path + filename;
+    string filename = path + f;
     cout << filename << endl;
     break;
     ifstream file(filename);
