@@ -11,9 +11,11 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <bitset>
 
 #include <dirent.h>
 
+#define MAX_BITS 64
 
 using namespace std;
 
@@ -27,7 +29,6 @@ int main(int argc, char** argv) {
 
   string path = argv[1];
   vector<string> files;
-  map<string, bitset<>> uids;
 
   get_allfiles(path, files);
   int files_count = files.size();
@@ -38,10 +39,11 @@ int main(int argc, char** argv) {
     cout << f << endl;
   }
   
-  map<string, bitset<files_count>> uids;
+  map<string, bitset<MAX_BITS>> uids;
   int bit = 0;
   // iterate throught files
   for(auto&& f : files) {
+    string filename = path + filename;
     ifstream file(filename);
     if (file.is_open()) {
       string uid;
@@ -55,7 +57,7 @@ int main(int argc, char** argv) {
   }
 
   // пробегаем по уидам, выводим
-  for(auto& u : uids) {
+  for(auto&& u : uids) {
     cout << u.first << " " << u.second << endl;
   }
 
