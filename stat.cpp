@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
   sort(files.begin(), files.end());
   // print names
   for(auto&& f : files) {
-    cout << f << endl;
+    cerr << f << endl;
   }
   
   map<string, bitset<MAX_BITS>> uids;
