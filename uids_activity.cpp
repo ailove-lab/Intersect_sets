@@ -35,7 +35,9 @@ int main(int argc, char** argv) {
 
   if(argc < 3) return usage();
 
+
   // get interview
+
   string path = argv[1]; // interview ids
   vector<string> files;
   get_allfiles(path, files);
@@ -58,10 +60,12 @@ int main(int argc, char** argv) {
       cerr << "can't open " << filename << endl;
     }
   }
-  
+
+
   // get activity
+
   files.clear();
-  path = argv[1]; // activity ids
+  path = argv[2]; // activity ids
   get_allfiles(path, files);
   sort(files.begin(), files.end());
   for(auto&& f : files) cerr << f << endl;
@@ -92,7 +96,8 @@ int main(int argc, char** argv) {
     }
   }
 
-  // пробегаем по уидам, выводим
+
+ // пробегаем по уидам, выводим
   for(auto&& s : interviews_stat) {
     cout << s.first << " ";
     for(auto&& a : s.second) {
