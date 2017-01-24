@@ -15,7 +15,7 @@
 #include <set>
 #include <map>
 #include <vector>
-#include <bitset>
+#include <array>
 #include <algorithm>
 
 #include <dirent.h>
@@ -27,7 +27,9 @@ using namespace std;
 int usage();
 bool get_allfiles(string dir_name, vector<string>& files);
 //  interview   uid     activity
-map<string, map<string, bitset<MAX_BITS>>> interviews;
+set<string>                       interviews_set;
+map<string, set<string>>          interviews_map;
+map<string, array<int, MAX_BITS>> interviews_stat;
 
 int main(int argc, char** argv) {
 
@@ -40,15 +42,17 @@ int main(int argc, char** argv) {
   sort(files.begin(), files.end());
   for(auto&& f : files) cerr << f << endl;
   for(auto&& f : files) {
-    string filename = path + f;
+    string filename = path + "/" + f;
     ifstream file(filename);
     if (file.is_open()) {
-      interviews[f] = map<string, bitset<MAX_BITS>>{};
+      interviews_map[f]  = set<string>{};           // init map
+      interviews_stat[f] = array<int, MAX_BITS>{0}; // init stat
       string uid;
       // iterate throught lines
       while (getline(file, uid)) {
+        interviews_set.insert(uid);    // total uid list
+        interviews_map[f].insert(uid); // per list uid list
         if(uid[uid.size()-1]=='\r') uid.resize(uid.size()-1);
-        interviews[f][uid] = bitset<MAX_BITS>{};
       }
     } else {
       cerr << "can't open " << filename << endl;
@@ -64,18 +68,21 @@ int main(int argc, char** argv) {
   int bit = 0;
   // iterate throught files
   for(auto&& f : files) {
-    string filename = path + f;
+    string filename = path + "/" + f;
     ifstream file(filename);
     if (file.is_open()) {
       string uid;
       // iterate throught lines
       while (getline(file, uid)) {
         if(uid[uid.size()-1]=='\r') uid.resize(uid.size()-1);
-        // iterate over all interviews
-        for(auto&& i : interviews) {
-          // if interview has uid, set bit
-          if(i.second.find(uid) != i.second.end()) {
-            i.second[uid][bit] = 1;
+        // check if uid beloving interviewers
+        if(interviews_set.find(uid) != interviews_set.end()) {
+          // find interviewer at list
+          for(auto&& i : interviews_map) {
+            // if interview has uid, increment col
+            if(i.second.find(uid) != i.second.end()) {
+              interviews_stat[i.first][bit]++;
+            }
           }
         }
       }
@@ -86,11 +93,12 @@ int main(int argc, char** argv) {
   }
 
   // пробегаем по уидам, выводим
-  for(auto&& i : interviews) {
-    cout << i.first << endl;
-    for(auto&& u : i.second) {
-      cout << u.first << " " << u.second << endl;
+  for(auto&& s : interviews_stat) {
+    cout << s.first << " ";
+    for(auto&& a : s.second) {
+      cout << a << " ";
     }
+    cout << endl;
   }
 
   return 0;
