@@ -1,15 +1,3 @@
-// 1) Iterate over all files (id lists)
-// 2) Build matrix of id inclusion at every list
-//    id1 -> list1, list2, ... , listN
-//    id2 -> list1, list2, ... , listN
-//    ...
-//    idM -> list1, list2, ... , listN
-// 3) Iterate over all files at interview
-// 4) For each uid find matched activity
-
-// iterate over interview folder, collect ids to map type -> ids
-// inerview_name -> uids vector -> activity_set
-
 #include <algorithm>
 #include <array>
 #include <fstream>
@@ -24,12 +12,18 @@
 
 using namespace std;
 
-int  usage();
 bool get_allfiles(string dir_name, vector<string>& files);
 
-set<string> interviews_set;              // Уникальные uid'ы
-map<string, set<string>> interviews_map; // файл -> uid'ы
-map<string, array<int, MAX_BITS>> interviews_stat; // файл -> статистика
+set<string> uids_set;                             // Уникальные uid'ы
+map<string, set<string>> file_uids_set;           // файл -> uid'ы
+map<string, array<int, MAX_BITS>> file_uids_stat; // файл -> статистика
+
+// инструкция
+int usage() {
+    cout << "Usage:" << endl;
+    cout << "\t./uids_activity interview_folder >> stat.txt" << endl;
+    return 1;
+}
 
 int main(int argc, char** argv) {
 
@@ -50,14 +44,15 @@ int main(int argc, char** argv) {
         ifstream file(filename);
         if (file.is_open()) {
             // инициализация статистики
-            interviews_map[f] = set<string>{}; // Уникальные uid'ы файла
-            interviews_stat[f] = array<int, MAX_BITS>{0}; // статистика файла
+            file_uids_set[f] = set<string>{}; // Уникальные uid'ы файла
+            file_uids_stat[f] = array<int, MAX_BITS>{0}; // статистика файла
 
             string uid;
             // iterate throught lines
             while (getline(file, uid)) {
-                interviews_set.insert(uid);      // Собираем уникальные uid'ы
-                interviews_map[f].insert(uid);   // Собираем уникальные uid'ы в файле
+                uids_set.insert(uid); // Собираем уникальные uid'ы
+                file_uids_set[f].insert(
+                    uid); // Собираем уникальные uid'ы в файле
                 if (uid[uid.size() - 1] == '\r') // cleanup \r at the end
                     uid.resize(uid.size() - 1);
             }
@@ -86,12 +81,12 @@ int main(int argc, char** argv) {
                 if (uid[uid.size() - 1] == '\r') // очищаем \r в конце
                     uid.resize(uid.size() - 1);
                 // Проверяем был ли такой пользователь в опросе
-                if (interviews_set.find(uid) != interviews_set.end()) {
+                if (uids_set.find(uid) != uids_set.end()) {
                     // Если был, находим категорию ответа
-                    for (auto&& i : interviews_map) {
+                    for (auto&& i : file_uids_set) {
                         // И инкрементируем её счетчик
                         if (i.second.find(uid) != i.second.end()) {
-                            interviews_stat[i.first][bit]++;
+                            file_uids_stat[i.first][bit]++;
                         }
                     }
                 }
@@ -104,7 +99,7 @@ int main(int argc, char** argv) {
     }
 
     // пробегаем по уидам, выводим
-    for (auto&& s : interviews_stat) {
+    for (auto&& s : file_uids_stat) {
         cout << s.first << " ";
         for (auto&& a : s.second) {
             cout << a << " ";
@@ -131,11 +126,4 @@ bool get_allfiles(string dir_name, vector<string>& files) {
 
     cerr << "Не могу открыть каталог " << dir_name;
     return 0;
-}
-
-// инструкция
-int usage() {
-    cout << "Usage:" << endl;
-    cout << "\t./uids_activity interview_folder >> stat.txt" << endl;
-    return 1;
 }

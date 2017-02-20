@@ -1,4 +1,5 @@
 #include <fstream>
+
 #include <iostream>
 #include <map>
 #include <set>
@@ -105,4 +106,3 @@ bool get_allfiles(string dir_name, vector<string>& files) {
     cerr << "Не могу открыть каталог " << dir_name;
     return 0;
 }
-
