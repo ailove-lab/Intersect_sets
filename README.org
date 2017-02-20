@@ -1,11 +1,19 @@
-* Intersect_sets
-  Пересечение двух групп множеств
+* uids_matrix
+  Построение матрицы наличия uid'ов в папках
 
-* Пример
+* uids_activity
+  
+* intersect_sets
+  Пересечение двух групп множеств
+  
+  Берет две папки, каждый файл в которой представляет список uid'ов, и считает
+  ково пересечений
+
+** Пример
 
   ~./intersect_sets data/A data/B >> intersection.txt~
 
-* Результат
+** Результат
 
 #+BEGIN_SRC 
 intersections.txt
