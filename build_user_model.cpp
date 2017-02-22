@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
 
     // пробегаем по каталогу B и для каждого встреченного active_uid выставляем
     // бит присутствия
-    map<uint64_t, uint64_t> results;
+    map<uint64_t, uint64_t> bitmap;
     uint64_t bit = 1;
     for (auto&& f : files_B) {
         cerr << folder_B + "/" + f << endl;
@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
                     // которые включены в оба множества, категории и даты
                     for (auto&& a : uids_A) {
                         if (a.second.find(uid) != a.second.end())
-                            results[uid] |= bit;
+                            bitmap[uid] |= bit;
                     }
                 }
             }
@@ -148,11 +148,29 @@ int main(int argc, char** argv) {
         }
     }
 
-    // выводим результат
+    // Расчитываем среднее значение бита в категории
+    map<string, array<double, 64>> results;
+    // для каждой категории
     for (auto&& a : uids_A) {
-        cout << a.first << "\tsize:" << a.second.size() << endl;
-        for (auto&& uid : a.second)
-            cout << uid << "\t" << results[uid] << endl;
+        // для каждого uida
+        for (auto&& uid : a.second) {
+            uint64_t mask = bitmap[uid];
+            // для каждого бита
+            for (uint8_t i = 0; i < 64; i++) {
+                // если бит установлен - инкрементируем
+                if (mask & 0x1)
+                    results[a.first][i]++;
+                mask >>= 1;
+            }
+        }
+
+        // выводим статистическую модели
+        cout << a.first << "\t" << a.second.size() << endl;
+        double size = a.second.size();
+        for (uint8_t i = 0; i < 64; i++) {
+            cout << results[a.first][i] / size << "\t";
+        }
+        cout << endl;
     }
 
     return 0;
