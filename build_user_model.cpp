@@ -17,6 +17,7 @@
 
 #include <fstream>
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <set>
@@ -57,43 +58,103 @@ int main(int argc, char** argv) {
     if (!get_allfiles(argv[1], files_A) || !get_allfiles(argv[2], files_B))
         return 1;
 
-    // пробегаем по каталогу А, для каждого файла создаем множество ID
-    // all_uids_A
-    set<int> all_uids_A;
+    set<uint64_t> active_uids;
+    // область для временных данных
+    {
+        // пробегаем по каталогу А, для каждого файла создаем множество ID
+        // all_uids_A
+        set<uint64_t> all_uids_A;
+        for (auto&& f : files_A) {
+            cerr << folder_A + "/" + f << endl;
+            ifstream file(folder_A + "/" + f);
+            if (file.is_open()) {
+                string uid;
+                while (getline(file, uid)) {
+                    all_uids_A.insert(stoull(uid));
+                }
+                file.close();
+            }
+        }
+
+        // пробегаем по каталогу B, для каждого файла создаем множество ID
+        // all_uids_B
+        set<uint64_t> all_uids_B;
+        for (auto&& f : files_B) {
+            cerr << folder_B + "/" + f << endl;
+            ifstream file(folder_B + "/" + f);
+            if (file.is_open()) {
+                string uid;
+                while (getline(file, uid)) {
+                    all_uids_B.insert(stoull(uid));
+                }
+                file.close();
+            }
+        }
+
+        cerr << "Пересекаем множества А и B" << endl;
+        // Пересекаем all_uids_A с all_uids_B, строим active uids
+        for (auto&& a : all_uids_A) {
+            if (all_uids_B.find(a) != all_uids_B.end())
+                active_uids.insert(a);
+        }
+        cerr << "Всего найдено " << active_uids.size() << " пересечений."
+             << endl;
+
+        // Очищаем память
+        all_uids_A.clear();
+        all_uids_B.clear();
+    }
+
+    // пробегаем по каталогу А, для каждого файла создаем свое множество id
+    map<string, set<uint64_t>> uids_A;
     for (auto&& f : files_A) {
         cerr << folder_A + "/" + f << endl;
         ifstream file(folder_A + "/" + f);
         if (file.is_open()) {
-            string uid;
-            while (getline(file, uid)) {
-                all_uids_A.insert(stoi(uid));
+            string uid_s;
+            while (getline(file, uid_s)) {
+                uint64_t uid = stoull(uid_s);
+                // Пдоверяем встречался ли это тот uid в B вообще, активен ли
+                if (active_uids.find(uid) != active_uids.end())
+                    uids_A[f].insert(uid);
             }
             file.close();
         }
     }
 
-    // пробегаем по каталогу B, для каждого файла создаем множество ID
-    // all_uids_B
-    set<int> all_uids_B;
+    // пробегаем по каталогу B и для каждого встреченного active_uid выставляем
+    // бит присутствия
+    map<uint64_t, uint64_t> results;
+    uint64_t bit = 1;
     for (auto&& f : files_B) {
         cerr << folder_B + "/" + f << endl;
         ifstream file(folder_B + "/" + f);
         if (file.is_open()) {
-            string uid;
-            while (getline(file, uid)) {
-                all_uids_B.insert(stoi(uid));
+            string uid_s;
+            while (getline(file, uid_s)) {
+                uint64_t uid = stoull(uid_s);
+                // Проверяем встречался ли этот uid в А, является ли ЦА
+                if (active_uids.find(uid) != active_uids.end()) {
+                    // ищем по категориям и выставляем бит у техт uid'ов,
+                    // которые включены в оба множества, категории и даты
+                    for (auto&& a : uids_A) {
+                        if (a.second.find(uid) != a.second.end())
+                            results[uid] |= bit;
+                    }
+                }
             }
             file.close();
+            bit <<= 1;
         }
     }
 
-    // Пересекаем all_uids_A с all_uids_B, строим active uids
-    set<int> active_uids;
-    for (auto&& a : all_uids_A) {
-        if (all_uids_B.find(a) != all_uids_B.end())
-            active_uids.insert(a);
+    // выводим результат
+    for (auto&& a : uids_A) {
+        cout << a.first << "\tsize:" << a.second.size() << endl;
+        for (auto&& uid : a.second)
+            cout << uid << "\t" << results[uid] << endl;
     }
-    cerr << "Всего найдено " << active_uids.size() << " пересечений." << endl;
+
     return 0;
 }
 
@@ -107,6 +168,7 @@ bool get_allfiles(string dir_name, vector<string>& files) {
                 continue;
             files.push_back(ent->d_name);
         }
+        sort(files.begin(), files.end());
         closedir(dir);
         return 1;
     }
