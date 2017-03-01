@@ -156,13 +156,20 @@ int main(int argc, char** argv) {
         for (auto&& uid : a.second) {
             // id категории
             cout << cat_id << " ";
-            uint64_t mask = bitmap[uid];
             // для каждого бита
             for (uint i = 0; i < 64; i++) {
-                // если бит установлен - выводим 
-                if (mask & 0x1)
-                    cout << i+1 << ":" << 1 << " ";
-                mask >>= 1;
+                float avr_b = 0.0;
+                int s = i> 0 ? -1 : 0;
+                int e = i<63 ?  1 : 0;
+                // count average bitcount
+                uint64_t mask = bitmap[uid] >> (i+s);
+                for(int b =s; b<=e; b++) {
+                    if (mask & 0x1) avr_b += 1.0;
+                    mask >>= 1;
+                }
+                avr_b /= e - s + 1.0;
+                if(avr_b > 0.0)
+                    cout << i+1 << ":" << avr_b << " ";
             }
             cout << endl;
         }
