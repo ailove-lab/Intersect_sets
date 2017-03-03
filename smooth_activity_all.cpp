@@ -171,12 +171,14 @@ int main(int argc, char** argv) {
     // Выводим хронологию всех прочих
     uint count_0 = 0;
     cat_id = 0;
+    count /= 4;
     for (auto&& uid : bitmap_all) {
         // Если uid из активной аудитории - пропускаем
         if(bitmap.find(uid.first)!=bitmap.end()) continue;
+        cout << uid.first << " ";
         print_bitmap(uid.second, cat_id);
         // Выходим через 2х активных пользователей
-        if(++count_0 > count*2) break;
+        // if(++count_0 > count) break;
     }
 
     return 0;
